@@ -1,5 +1,6 @@
 from django.db.models import Q
 from .models import Profile, Skill
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 def searchProfiles(request):
     search_query=''
@@ -15,3 +16,29 @@ def searchProfiles(request):
         Q(skill__in=skills)
     )
     return profiles, search_query
+
+def paginateProfiles(request, profiles, results):
+    
+    paginator=Paginator(profiles, results)
+
+    page=request.GET.get('page')
+    try:
+        profiles=paginator.page(page)
+    except PageNotAnInteger:
+        page=1
+        profiles=paginator.page(page)
+    except EmptyPage:
+        page=paginator.num_pages
+        profiles=paginator.page(page)
+
+    leftIndex = int(page)-1
+    if leftIndex < 1:
+        leftIndex=1
+    
+    rightIndex=int(page)+2
+    if rightIndex > paginator.num_pages+1:
+        rightIndex=paginator.num_pages+1
+
+    custom_range=range(leftIndex, rightIndex)
+
+    return custom_range, profiles
