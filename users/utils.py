@@ -2,43 +2,45 @@ from django.db.models import Q
 from .models import Profile, Skill
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
+
 def searchProfiles(request):
-    search_query=''
+    search_query = ''
 
     if request.GET.get('search_query'):
-        search_query=request.GET.get('search_query')
+        search_query = request.GET.get('search_query')
 
-    skills=Skill.objects.filter(name__icontains=search_query)
+    skills = Skill.objects.filter(name__icontains=search_query)
 
     profiles = Profile.objects.distinct().filter(
-        Q(name__icontains=search_query) | 
-        Q(short_intro__icontains=search_query) | 
+        Q(name__icontains=search_query) |
+        Q(short_intro__icontains=search_query) |
         Q(skill__in=skills)
     )
     return profiles, search_query
 
-def paginateProfiles(request, profiles, results):
-    
-    paginator=Paginator(profiles, results)
 
-    page=request.GET.get('page')
+def paginateProfiles(request, profiles, results):
+
+    paginator = Paginator(profiles, results)
+
+    page = request.GET.get('page')
     try:
-        profiles=paginator.page(page)
+        profiles = paginator.page(page)
     except PageNotAnInteger:
-        page=1
-        profiles=paginator.page(page)
+        page = 1
+        profiles = paginator.page(page)
     except EmptyPage:
-        page=paginator.num_pages
-        profiles=paginator.page(page)
+        page = paginator.num_pages
+        profiles = paginator.page(page)
 
     leftIndex = int(page)-1
     if leftIndex < 1:
-        leftIndex=1
-    
-    rightIndex=int(page)+2
-    if rightIndex > paginator.num_pages+1:
-        rightIndex=paginator.num_pages+1
+        leftIndex = 1
 
-    custom_range=range(leftIndex, rightIndex)
+    rightIndex = int(page)+2
+    if rightIndex > paginator.num_pages+1:
+        rightIndex = paginator.num_pages+1
+
+    custom_range = range(leftIndex, rightIndex)
 
     return custom_range, profiles
